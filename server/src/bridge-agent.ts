@@ -27,11 +27,14 @@ export function resolveRemoteBridgeUrl(): string {
   return "";
 }
 
+const BRIDGE_FETCH_TIMEOUT_MS = 15_000;
+
 async function forwardToRemoteBridge(request: BridgeRequest, remoteUrl: string): Promise<BridgeResponse> {
   const response = await fetch(remoteUrl, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(request),
+    signal: AbortSignal.timeout(BRIDGE_FETCH_TIMEOUT_MS),
   });
 
   const body = await response.text();

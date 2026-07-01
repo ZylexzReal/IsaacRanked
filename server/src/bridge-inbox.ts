@@ -1,8 +1,16 @@
-import { createReadStream, existsSync, readFileSync, statSync, writeFileSync, mkdirSync } from "node:fs";
+import {
+  closeSync,
+  existsSync,
+  openSync,
+  readFileSync,
+  readSync,
+  statSync,
+  writeFileSync,
+  mkdirSync,
+} from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { homedir } from "node:os";
-import { createInterface } from "node:readline";
 import type { BridgeRequest, BridgeResponse } from "../../shared/protocol.js";
 
 export const BRIDGE_SEND_PREFIX = "[IsaacRanked][BRIDGE_SEND] ";
@@ -74,10 +82,12 @@ export function startLogBridgeForwarder(options: {
   const { modDir, logPath, label, canProcess, forward } = options;
 
   let offset = 0;
+  let partialLine = "";
   let inboxVersion = 0;
   const pendingResponses: BridgeResponse[] = [];
   let processing = false;
   const requestQueue: BridgeRequest[] = [];
+  const seenRequestIds = new Set<string>();
 
   const flushInbox = () => {
     inboxVersion += 1;
@@ -98,8 +108,18 @@ export function startLogBridgeForwarder(options: {
           continue;
         }
 
-        const response = await forward(request);
-        pendingResponses.push(response);
+        try {
+          const response = await forward(request);
+          pendingResponses.push(response);
+        } catch (err) {
+          const message = err instanceof Error ? err.message : String(err);
+          console.error(`[${label}] forward error for ${request.requestId}:`, message);
+          pendingResponses.push({
+            requestId: request.requestId,
+            messages: [],
+            error: message,
+          });
+        }
       }
       if (pendingResponses.length > 0) {
         flushInbox();
@@ -127,28 +147,15 @@ export function startLogBridgeForwarder(options: {
 
     try {
       const request = JSON.parse(raw) as BridgeRequest;
+      if (!request.requestId || seenRequestIds.has(request.requestId)) {
+        return;
+      }
+      seenRequestIds.add(request.requestId);
       requestQueue.push(request);
       void processQueue();
     } catch (err) {
       console.error(`[${label}] failed to parse bridge send:`, err);
     }
-  };
-
-  const tailFrom = (start: number) => {
-    if (!existsSync(logPath)) {
-      return;
-    }
-
-    const stream = createReadStream(logPath, { start, encoding: "utf8" });
-    const rl = createInterface({ input: stream, crlfDelay: Infinity });
-    rl.on("line", handleLine);
-    rl.on("close", () => {
-      try {
-        offset = statSync(logPath).size;
-      } catch {
-        offset = 0;
-      }
-    });
   };
 
   const poll = () => {
@@ -160,9 +167,24 @@ export function startLogBridgeForwarder(options: {
       const size = statSync(logPath).size;
       if (size < offset) {
         offset = 0;
+        partialLine = "";
       }
-      if (size > offset) {
-        tailFrom(offset);
+      if (size <= offset) {
+        return;
+      }
+
+      const byteLength = size - offset;
+      const fd = openSync(logPath, "r");
+      const buffer = Buffer.alloc(byteLength);
+      readSync(fd, buffer, 0, byteLength, offset);
+      closeSync(fd);
+      offset = size;
+
+      const text = partialLine + buffer.toString("utf8");
+      const lines = text.split(/\r?\n/);
+      partialLine = lines.pop() ?? "";
+      for (const line of lines) {
+        handleLine(line);
       }
     } catch (err) {
       console.error(`[${label}] poll error:`, err);

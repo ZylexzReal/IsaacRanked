@@ -333,6 +333,12 @@ function Menu.activateAction(index)
             logMenuDebug("queue ranked blocked: repentogon missing")
             return
         end
+        if State.current.matchState == State.MATCH_STATES.connecting
+            or State.current.matchState == State.MATCH_STATES.queued then
+            State.setStatus("Already connecting or in queue. Use Cancel Queue first.")
+            logMenuDebug("queue ranked blocked: already connecting or queued")
+            return
+        end
         State.setError("")
         local joinOk = Network.startQueueJoin()
         if not joinOk then
@@ -353,8 +359,11 @@ function Menu.activateAction(index)
         -- #endregion
     elseif action == "Cancel Queue" then
         local leaveOk = Network.queueLeave()
+        Network.resetConnectionAttempt()
         Integrity.endRunProtection()
         State.resetMatch()
+        State.current.queuePosition = 0
+        State.current.estimatedWaitSec = 0
         State.setStatus("Queue cancelled")
         logMenuDebug("cancel queue sent leave=" .. tostring(leaveOk))
     elseif action == "Mock Match" then

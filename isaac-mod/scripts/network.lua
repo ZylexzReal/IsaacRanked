@@ -563,10 +563,7 @@ local function checkConnectionTimeout()
     end
 
     if Network._awaitingHelloAck or Network._awaitingQueueUpdate then
-        Network._awaitingHelloAck = false
-        Network._awaitingQueueUpdate = false
-        Network._pendingQueueJoin = false
-        Network._connectionDeadline = nil
+        Network.resetConnectionAttempt()
         if State.current.matchState == State.MATCH_STATES.connecting
             or State.current.matchState == State.MATCH_STATES.queued then
             State.current.matchState = State.MATCH_STATES.idle
@@ -758,7 +755,7 @@ end
 
 function Network.startQueueJoin(unlockedCharacters)
     loggedInboxIncludeDiag = false
-    Network._serverConnected = false
+    Network.resetConnectionAttempt()
     Network._awaitingHelloAck = true
     Network._awaitingQueueUpdate = false
     Network._pendingQueueJoin = true
@@ -769,6 +766,17 @@ end
 
 function Network.isServerConnected()
     return Network._serverConnected == true
+end
+
+function Network.resetConnectionAttempt()
+    Network._awaitingHelloAck = false
+    Network._awaitingQueueUpdate = false
+    Network._pendingQueueJoin = false
+    Network._connectionDeadline = nil
+    Network._serverConnected = false
+    for requestId, _ in pairs(pendingResponses) do
+        pendingResponses[requestId] = nil
+    end
 end
 
 function Network.queueLeave()

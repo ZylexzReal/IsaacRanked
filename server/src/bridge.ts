@@ -2,7 +2,7 @@ import { createServer } from "node:http";
 import { readFileSync, writeFileSync, existsSync, mkdirSync, readdirSync, unlinkSync } from "node:fs";
 import { join } from "node:path";
 import WebSocket from "ws";
-import type { BridgeRequest } from "../../shared/protocol.js";
+import type { BridgeRequest, BridgeResponse } from "../../shared/protocol.js";
 import { processBridgeRequest } from "./bridge-handler.js";
 import { resolveBridgeDir } from "./bridge-inbox.js";
 
@@ -11,6 +11,13 @@ const HTTP_PORT = Number(process.env.ISAAC_RANKED_HTTP_PORT ?? 8766);
 
 const BRIDGE_DIR = resolveBridgeDir();
 let bridgeWebSocket: WebSocket | null = null;
+let bridgeRequestChain: Promise<unknown> = Promise.resolve();
+
+function enqueueBridgeRequest(request: BridgeRequest, ws: WebSocket): Promise<BridgeResponse> {
+  const next = bridgeRequestChain.then(() => processBridgeRequest(request, ws));
+  bridgeRequestChain = next.catch(() => {});
+  return next;
+}
 
 function ensureBridgeDir(): void {
   if (!existsSync(BRIDGE_DIR)) {
@@ -25,7 +32,7 @@ function getBridgeWebSocket(): WebSocket | null {
 async function handleBridgeFile(filePath: string, ws: WebSocket): Promise<void> {
   const raw = readFileSync(filePath, "utf8");
   const request = JSON.parse(raw) as BridgeRequest;
-  const response = await processBridgeRequest(request, ws);
+  const response = await enqueueBridgeRequest(request, ws);
   const responsePath = join(BRIDGE_DIR, `response-${request.requestId}.json`);
   writeFileSync(responsePath, JSON.stringify(response, null, 2), "utf8");
   unlinkSync(filePath);
@@ -112,7 +119,7 @@ export function startHttpBridgeApi(): void {
           try {
             const raw = Buffer.concat(chunks).toString("utf8");
             const request = JSON.parse(raw) as BridgeRequest;
-            const response = await processBridgeRequest(request, ws);
+            const response = await enqueueBridgeRequest(request, ws);
             res.writeHead(200, { "Content-Type": "application/json" });
             res.end(JSON.stringify(response));
           } catch (err) {
