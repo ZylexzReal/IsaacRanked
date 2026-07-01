@@ -10,6 +10,6 @@
     "skipLibCheck": true,
     "resolveJsonModule": true
   },
-  "include": ["src/**/*", "../server/src/bridge-agent.ts", "../server/src/bridge-inbox.ts", "../shared/**/*"],
+  "include": ["src/**/*", "electron/**/*", "../server/src/bridge-agent.ts", "../server/src/bridge-inbox.ts", "../shared/**/*"],
   "exclude": ["node_modules", "dist"]
 }

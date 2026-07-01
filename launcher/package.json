@@ -4,15 +4,60 @@
   "private": true,
   "description": "Official Isaac Ranked launcher — starts the ranked bridge and launches Isaac",
   "type": "module",
+  "main": "dist/launcher/electron/main.js",
+  "author": "Isaac Ranked",
   "scripts": {
     "dev": "tsx src/main.ts",
-    "build": "tsc",
+    "build": "tsc && node scripts/copy-electron-assets.mjs",
     "start": "node dist/launcher/src/main.js",
-    "play": "tsx src/main.ts"
+    "play": "tsx src/main.ts",
+    "gui": "npm run build && electron .",
+    "dist": "npm run build && electron-builder --win"
+  },
+  "dependencies": {
+    "electron-updater": "^6.6.2",
+    "ws": "^8.18.0"
   },
   "devDependencies": {
     "@types/node": "^22.10.0",
+    "electron": "^35.0.0",
+    "electron-builder": "^25.1.8",
     "tsx": "^4.19.2",
     "typescript": "^5.7.2"
+  },
+  "build": {
+    "appId": "com.isaacranked.launcher",
+    "productName": "Isaac Ranked",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": "config.default.json",
+        "to": "config.default.json"
+      }
+    ],
+    "win": {
+      "target": [
+        "nsis"
+      ],
+      "signAndEditExecutable": false
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Isaac Ranked"
+    },
+    "publish": {
+      "provider": "github",
+      "owner": "ZylexzReal",
+      "repo": "IsaacRanked"
+    }
   }
 }

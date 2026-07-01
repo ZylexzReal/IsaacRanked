@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self'" />
+  <title>Isaac Ranked</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #141414;
+      --panel: #1f1f1f;
+      --text: #f2f2f2;
+      --muted: #a8a8a8;
+      --accent: #c23b3b;
+      --accent-hover: #d84b4b;
+      --ok: #4caf7d;
+      --warn: #e0b252;
+      --error: #ff6b6b;
+      --border: #333;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Tahoma, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      padding: 24px 24px 12px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 1.6rem;
+      letter-spacing: 0.04em;
+    }
+
+    .subtitle {
+      margin-top: 6px;
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+
+    main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      padding: 20px 24px 24px;
+    }
+
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      font-size: 0.9rem;
+    }
+
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--muted);
+    }
+
+    .dot.online { background: var(--ok); }
+    .dot.offline { background: var(--warn); }
+    .dot.busy { background: var(--accent); }
+
+    #playBtn {
+      width: 100%;
+      border: none;
+      border-radius: 12px;
+      padding: 16px 20px;
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: white;
+      background: var(--accent);
+      cursor: pointer;
+      transition: background 0.15s ease, transform 0.05s ease;
+    }
+
+    #playBtn:hover:not(:disabled) {
+      background: var(--accent-hover);
+    }
+
+    #playBtn:active:not(:disabled) {
+      transform: translateY(1px);
+    }
+
+    #playBtn:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+    }
+
+    .log-panel {
+      flex: 1;
+      min-height: 220px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px;
+      overflow: auto;
+      font-family: Consolas, "Courier New", monospace;
+      font-size: 0.82rem;
+      line-height: 1.45;
+      white-space: pre-wrap;
+    }
+
+    .log-line.warn { color: var(--warn); }
+    .log-line.error { color: var(--error); }
+    .log-line.info { color: var(--text); }
+
+    footer {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 0 24px 20px;
+      color: var(--muted);
+      font-size: 0.82rem;
+    }
+
+    button.link {
+      background: none;
+      border: none;
+      color: #8cb4ff;
+      cursor: pointer;
+      padding: 0;
+      font: inherit;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Isaac Ranked</h1>
+    <p class="subtitle">Launch Repentogon with ranked matchmaking</p>
+  </header>
+
+  <main>
+    <div class="status-pill">
+      <span id="statusDot" class="dot"></span>
+      <span id="statusText">Ready to play</span>
+    </div>
+
+    <button id="playBtn" type="button">Play Ranked</button>
+
+    <div id="log" class="log-panel" aria-live="polite"></div>
+  </main>
+
+  <footer>
+    <span>In-game: press F6 → Queue Ranked</span>
+    <button id="configBtn" class="link" type="button">Open config folder</button>
+  </footer>
+
+  <script src="renderer.js"></script>
+</body>
+</html>

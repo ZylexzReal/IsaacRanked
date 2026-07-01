@@ -7,4 +7,5 @@ server/.mod-dir
 server/.agent-url
 server/.env
 launcher/config.json
+launcher/release/
 .DS_Store
