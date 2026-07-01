@@ -1,0 +1,4 @@
+return {
+    enabledMods = {},
+    capturedAt = "template",
+}

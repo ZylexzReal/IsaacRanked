@@ -1,0 +1,15 @@
+[Unit]
+Description=Isaac Ranked matchmaking server
+After=network.target
+
+[Service]
+Type=simple
+User=ubuntu
+WorkingDirectory=/home/ubuntu/IsaacRanked/server
+EnvironmentFile=/home/ubuntu/IsaacRanked/server/.env
+ExecStart=/usr/bin/node dist/server/src/index.js
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

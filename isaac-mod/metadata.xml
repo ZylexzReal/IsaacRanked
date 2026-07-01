@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<metadata>
+
+    <name>Isaac Ranked</name>
+
+    <directory>isaac-ranked</directory>
+
+    <id>isaac-ranked</id>
+
+    <description>Ranked speedrunning matchmaking for The Binding of Isaac. Requires REPENTOGON and the Isaac Ranked Launcher (download link in mod description). Subscribe to this mod, install the launcher, then click Play Ranked from the launcher.</description>
+
+    <version>0.1.0</version>
+
+    <visibility>Public</visibility>
+
+    <tag id="Lua"/>
+
+</metadata>
+

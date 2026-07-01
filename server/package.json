@@ -1,0 +1,27 @@
+{
+  "name": "isaac-ranked-server",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/server/src/index.js",
+    "dev": "tsx watch src/index.ts",
+    "agent": "tsx src/bridge-agent.ts",
+    "start:agent": "node dist/server/src/bridge-agent.js",
+    "stop": "tsx src/stop-server.ts",
+    "test": "tsx src/test-matchmaking.ts",
+    "test:anticheat": "tsx src/test-anticheat.ts",
+    "test:integrity": "tsx src/test-integrity.ts",
+    "test:ratings": "tsx src/test-ratings.ts"
+  },
+  "dependencies": {
+    "ws": "^8.18.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "@types/ws": "^8.5.13",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2"
+  }
+}

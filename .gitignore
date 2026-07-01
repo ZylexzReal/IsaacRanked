@@ -1,0 +1,10 @@
+node_modules/
+dist/
+*.db
+*.log
+server/.bridge-dir
+server/.mod-dir
+server/.agent-url
+server/.env
+launcher/config.json
+.DS_Store
